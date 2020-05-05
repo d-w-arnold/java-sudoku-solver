@@ -22,7 +22,8 @@ public class Sudoku
             {9, 1, 2, 3, 4, 5, 6, 7, 8}
     };
     private List<List<Integer>> board;
-    private List<Pair<Pair<Integer, Integer>, Set<Integer>>> emptyCoords;
+    private List<Pair<Integer, Integer>> emptyCoords;
+    private Map<Pair<Integer, Integer>, Set<Integer>> tries;
 
     public Sudoku()
     {
@@ -67,6 +68,27 @@ public class Sudoku
     public void solve()
     {
         setEmptyCoords();
+
+        int index = 0;
+        while (index < emptyCoords.size()) {
+            var cd = emptyCoords.get(index);
+            for (int i = 1; i <= 9; i++) {
+                if (notPrevUsed(cd, i) && validRow(cd, i) && validCol(cd, i) && validSubMatrix(cd, i)) {
+                    board.get(cd.getKey()).set(cd.getValue(), i);
+                    Set<Integer> tmp = new HashSet<>();
+                    for (int j = 1; j <= i; j++) {
+                        tmp.add(j);
+                    }
+                    tries.put(cd, tmp);
+                    index++;
+                    break;
+                } else if (i == 9) {
+                    tries.put(cd, new HashSet<>());
+                    index--;
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -80,11 +102,54 @@ public class Sudoku
             var row = board.get(i);
             for (int j = 0; j < row.size(); j++) {
                 if (row.get(j) == 0) {
-                    emptyCoords.add(new Pair<>(new Pair<>(i, j), new HashSet<>()));
+                    emptyCoords.add(new Pair<>(i, j));
                 }
             }
         }
+        setTries();
     }
 
+    /**
+     * Generate the HashMap for recording the numbers tried at each given coordinate.
+     */
+    private void setTries()
+    {
+        tries = new HashMap<>();
+        for (var coordinate : emptyCoords) {
+            tries.put(coordinate, new HashSet<>());
+        }
+    }
+
+    /**
+     * Check is a value has been used at that coordinate before.
+     */
+    private boolean notPrevUsed(Pair<Integer, Integer> coord, int value)
+    {
+        return !tries.get(coord).contains(value);
+    }
+
+    /**
+     * Is a value legal at a given coordinate, for a given row.
+     */
+    private boolean validRow(Pair<Integer, Integer> coord, int value)
+    {
+        return false;
+    }
+
+    /**
+     * Is a value legal at a given coordinate, for a given column.
+     */
+    private boolean validCol(Pair<Integer, Integer> coord, int value)
+    {
+        return false;
+    }
+
+    /**
+     * Is a value legal at a given coordinate, for a given column.
+     */
+    private boolean validSubMatrix(Pair<Integer, Integer> coord, int value)
+    {
+        return false;
+    }
 
 }
