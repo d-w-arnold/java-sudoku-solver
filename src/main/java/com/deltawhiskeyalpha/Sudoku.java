@@ -21,21 +21,13 @@ public class Sudoku
             {6, 7, 8, 9, 1, 2, 3, 4, 5},
             {9, 1, 2, 3, 4, 5, 6, 7, 8}
     };
-    private List<List<Integer>> board;
+    public List<List<Integer>> board;
     private List<Pair<Integer, Integer>> emptyCoords;
     private Map<Pair<Integer, Integer>, Set<Integer>> tries;
 
     public Sudoku()
     {
         genBoard();
-    }
-
-    /**
-     * Get the Sudoku board for this game.
-     */
-    public List<List<Integer>> getBoard()
-    {
-        return board;
     }
 
     /**
@@ -70,7 +62,7 @@ public class Sudoku
     }
 
     /**
-     * Prints basic static 9x9 matrix Sudoku board to standard output.
+     * Prints the basic static 9x9 matrix Sudoku board to standard output.
      */
     public void printBASE()
     {
@@ -103,7 +95,7 @@ public class Sudoku
                 }
             }
         }
-        System.out.println("Sudoku board completed!");
+        System.out.println("\nSudoku board completed!\n");
     }
 
     /**
