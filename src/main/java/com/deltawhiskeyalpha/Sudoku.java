@@ -25,25 +25,29 @@ public class Sudoku
     private List<Pair<Integer, Integer>> emptyCoords;
     private Map<Pair<Integer, Integer>, Set<Integer>> tries;
 
-    public Sudoku()
+    public Sudoku(boolean randomBoard)
     {
-        genBoard();
+        genBoard(randomBoard);
     }
 
     /**
      * Generates a random Sudoku board from the basic static 9x9 matrix Sudoku board.
      */
     // TODO Could be improves to generate legal Sudoku board without having to refer to a static board.
-    private void genBoard()
+    private void genBoard(boolean randomBoard)
     {
         board = new ArrayList<>();
         for (int i = 0; i < 9; i++) {
             List<Integer> tmp = new ArrayList<>();
             for (int j = 0; j < 9; j++) {
-                if (new Random().nextBoolean()) {
-                    tmp.add(BASE[i][j]);
+                if (randomBoard) {
+                    if (new Random().nextBoolean()) {
+                        tmp.add(BASE[i][j]);
+                    } else {
+                        tmp.add(0);
+                    }
                 } else {
-                    tmp.add(0);
+                    tmp.add(BASE[i][j]);
                 }
             }
             board.add(tmp);

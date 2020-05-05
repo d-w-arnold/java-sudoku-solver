@@ -28,7 +28,7 @@ public class App extends Application
 
     public static void main(String[] args)
     {
-        Sudoku game = new Sudoku();
+        Sudoku game = new Sudoku(true);
         game.printBoard(); // Before solve
         game.solve();
         game.printBoard(); // After solve
