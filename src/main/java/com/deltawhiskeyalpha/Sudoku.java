@@ -73,19 +73,19 @@ public class Sudoku
         while (index < emptyCoords.size()) {
             var cd = emptyCoords.get(index);
             for (int i = 1; i <= 9; i++) {
-                if (notPrevUsed(cd, i) && validRow(cd, i) && validCol(cd, i) && validSubMatrix(cd, i)) {
-                    board.get(cd.getKey()).set(cd.getValue(), i);
-                    Set<Integer> tmp = new HashSet<>();
-                    for (int j = 1; j <= i; j++) {
-                        tmp.add(j);
-                    }
-                    tries.put(cd, tmp);
-                    index++;
-                    break;
+                if (!prevUsed(cd, i) && validRow(cd, i) && validCol(cd, i) && validSubMatrix(cd, i)) {
+//                    board.get(cd.getKey()).set(cd.getValue(), i);
+//                    Set<Integer> tmp = new HashSet<>();
+//                    for (int j = 1; j <= i; j++) {
+//                        tmp.add(j);
+//                    }
+//                    tries.put(cd, tmp);
+//                    index++;
+//                    break;
                 } else if (i == 9) {
-                    tries.put(cd, new HashSet<>());
-                    index--;
-                    break;
+//                    tries.put(cd, new HashSet<>());
+//                    index--;
+//                    break;
                 }
             }
         }
@@ -123,9 +123,9 @@ public class Sudoku
     /**
      * Check is a value has been used at that coordinate before.
      */
-    private boolean notPrevUsed(Pair<Integer, Integer> coord, int value)
+    private boolean prevUsed(Pair<Integer, Integer> coord, int value)
     {
-        return !tries.get(coord).contains(value);
+        return tries.get(coord).contains(value);
     }
 
     /**
@@ -133,7 +133,18 @@ public class Sudoku
      */
     private boolean validRow(Pair<Integer, Integer> coord, int value)
     {
-        return false;
+        int rowInd = coord.getKey();
+        int colInd = coord.getValue();
+        List<Integer> row = board.get(rowInd);
+        for (int i = 0; i < row.size(); i++) {
+            if (i == colInd) {
+                continue;
+            }
+            if (row.get(i) == value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -141,7 +152,18 @@ public class Sudoku
      */
     private boolean validCol(Pair<Integer, Integer> coord, int value)
     {
-        return false;
+        int rowInd = coord.getKey();
+        int colInd = coord.getValue();
+        for (int i = 0; i < board.size(); i++) {
+            if (i == rowInd) {
+                continue;
+            }
+            int cellVal = board.get(i).get(colInd);
+            if (cellVal == value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -149,7 +171,16 @@ public class Sudoku
      */
     private boolean validSubMatrix(Pair<Integer, Integer> coord, int value)
     {
-        return false;
+        var subMatrixVals = getSubMatrixSet(coord);
+        return true;
+    }
+
+    /**
+     * Get a HashSet of integers in the 3x3 sub matrix of the Sudoku board in which a coordinate resides.
+     */
+    private Set<Integer> getSubMatrixSet(Pair<Integer, Integer> coord)
+    {
+        return new HashSet<>();
     }
 
 }
