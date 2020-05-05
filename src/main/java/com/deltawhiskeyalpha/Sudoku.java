@@ -31,9 +31,17 @@ public class Sudoku
     }
 
     /**
+     * Get the Sudoku board for this game.
+     */
+    public List<List<Integer>> getBoard()
+    {
+        return board;
+    }
+
+    /**
      * Generates a random Sudoku board from the basic static 9x9 matrix Sudoku board.
      */
-    // TODO Could be improves to generate legal Suduko board without having to refer to a static board.
+    // TODO Could be improves to generate legal Sudoku board without having to refer to a static board.
     private void genBoard()
     {
         board = new ArrayList<>();
@@ -48,7 +56,7 @@ public class Sudoku
             }
             board.add(tmp);
         }
-
+        setEmptyCoords();
     }
 
     /**
@@ -62,33 +70,40 @@ public class Sudoku
     }
 
     /**
+     * Prints basic static 9x9 matrix Sudoku board to standard output.
+     */
+    public void printBASE()
+    {
+        System.out.println(Arrays.deepToString(Sudoku.BASE).replace("[", "\n["));
+    }
+
+    /**
      * Starting solving the Sudoku game using backtracking algorithm:
      * Source: https://dev.to/aspittel/how-i-finally-wrote-a-sudoku-solver-177g
      */
     public void solve()
     {
-        setEmptyCoords();
-
         int index = 0;
         while (index < emptyCoords.size()) {
             var cd = emptyCoords.get(index);
             for (int i = 1; i <= 9; i++) {
                 if (!prevUsed(cd, i) && validRow(cd, i) && validCol(cd, i) && validSubMatrix(cd, i)) {
-//                    board.get(cd.getKey()).set(cd.getValue(), i);
-//                    Set<Integer> tmp = new HashSet<>();
-//                    for (int j = 1; j <= i; j++) {
-//                        tmp.add(j);
-//                    }
-//                    tries.put(cd, tmp);
-//                    index++;
-//                    break;
+                    board.get(cd.getKey()).set(cd.getValue(), i);
+                    Set<Integer> tmp = new HashSet<>();
+                    for (int j = 1; j <= i; j++) {
+                        tmp.add(j);
+                    }
+                    tries.put(cd, tmp);
+                    index++;
+                    break;
                 } else if (i == 9) {
-//                    tries.put(cd, new HashSet<>());
-//                    index--;
-//                    break;
+                    tries.put(cd, new HashSet<>());
+                    index--;
+                    break;
                 }
             }
         }
+        System.out.println("Sudoku board completed!");
     }
 
     /**
@@ -171,8 +186,8 @@ public class Sudoku
      */
     private boolean validSubMatrix(Pair<Integer, Integer> coord, int value)
     {
-        var subMatrixVals = getSubMatrixSet(coord);
-        return true;
+        Set<Integer> subMatrixVals = getSubMatrixSet(coord);
+        return !subMatrixVals.contains(value);
     }
 
     /**
@@ -180,7 +195,45 @@ public class Sudoku
      */
     private Set<Integer> getSubMatrixSet(Pair<Integer, Integer> coord)
     {
+        int rowInd = coord.getKey();
+        int colInd = coord.getValue();
+        if (rowInd < 3 && colInd < 3) {
+            return getSubMatrixSetHelper(coord, 3, 3);
+        } else if (rowInd < 3 && colInd < 6) {
+            return getSubMatrixSetHelper(coord, 3, 6);
+        } else if (rowInd < 3 && colInd < 9) {
+            return getSubMatrixSetHelper(coord, 3, 9);
+        } else if (rowInd < 6 && colInd < 3) {
+            return getSubMatrixSetHelper(coord, 6, 3);
+        } else if (rowInd < 6 && colInd < 6) {
+            return getSubMatrixSetHelper(coord, 6, 6);
+        } else if (rowInd < 6 && colInd < 9) {
+            return getSubMatrixSetHelper(coord, 6, 9);
+        } else if (rowInd < 9 && colInd < 3) {
+            return getSubMatrixSetHelper(coord, 9, 3);
+        } else if (rowInd < 9 && colInd < 6) {
+            return getSubMatrixSetHelper(coord, 9, 6);
+        } else if (rowInd < 9 && colInd < 9) {
+            return getSubMatrixSetHelper(coord, 9, 9);
+        }
         return new HashSet<>();
+    }
+
+    /**
+     * Helper method for getSubMatrixSet().
+     */
+    private Set<Integer> getSubMatrixSetHelper(Pair<Integer, Integer> coord, int r, int c)
+    {
+        Set<Integer> tmp = new HashSet<>();
+        for (int i = (r - 1); i >= (r - 3); i--) {
+            for (int j = (c - 1); j >= (c - 3); j--) {
+                if (coord.getKey() == i && coord.getValue() == j) {
+                    continue;
+                }
+                tmp.add(board.get(i).get(j));
+            }
+        }
+        return tmp;
     }
 
 }

@@ -11,11 +11,12 @@ import javafx.stage.Stage;
  */
 public class App extends Application
 {
+    private static int sceneWidth = 640;
+    private static int sceneHeight = 480;
 
     public static void main(String[] args)
     {
         Sudoku game = new Sudoku();
-        game.printBoard();
         game.solve();
         launch();
     }
@@ -23,11 +24,8 @@ public class App extends Application
     @Override
     public void start(Stage stage)
     {
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
-
-        var label = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
-        var scene = new Scene(new StackPane(label), 640, 480);
+        var label = new Label("Hello, JavaFX");
+        var scene = new Scene(new StackPane(label), sceneWidth, sceneHeight);
         stage.setScene(scene);
         stage.show();
     }
