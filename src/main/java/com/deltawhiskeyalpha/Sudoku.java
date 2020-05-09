@@ -178,7 +178,7 @@ public class Sudoku
     }
 
     /**
-     * Is a value legal at a given coordinate, for a given column.
+     * Is a value legal at in a given sub-matrix, the 3x3 matrix in which it resides.
      */
     private boolean validSubMatrix(Pair<Integer, Integer> coord, int value)
     {
