@@ -132,7 +132,7 @@ public class Sudoku
     }
 
     /**
-     * Check is a value has been used at that coordinate before.
+     * Check if a value has been used at that coordinate before.
      */
     private boolean prevUsed(Pair<Integer, Integer> coord, int value)
     {
