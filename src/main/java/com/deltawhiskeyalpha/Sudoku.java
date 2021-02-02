@@ -6,230 +6,184 @@ import java.util.*;
 
 /**
  * @author David W. Arnold
- * @version 05/05/2020
+ * @version 02/02/2021
  */
 public class Sudoku
 {
-    private static final int[][] BASE = {
-            {1, 2, 3, 4, 5, 6, 7, 8, 9},
-            {4, 5, 6, 7, 8, 9, 1, 2, 3},
-            {7, 8, 9, 1, 2, 3, 4, 5, 6},
-            {2, 3, 4, 5, 6, 7, 8, 9, 1},
-            {5, 6, 7, 8, 9, 1, 2, 3, 4},
-            {8, 9, 1, 2, 3, 4, 5, 6, 7},
-            {3, 4, 5, 6, 7, 8, 9, 1, 2},
-            {6, 7, 8, 9, 1, 2, 3, 4, 5},
-            {9, 1, 2, 3, 4, 5, 6, 7, 8}
-    };
-    public List<List<Integer>> board;
-    private List<Pair<Integer, Integer>> emptyCoords;
-    private Map<Pair<Integer, Integer>, Set<Integer>> tries;
+    private final int[][] board;
+    private final List<Pair<Integer, Integer>> tbcCells;
+    private final Map<Pair<Integer, Integer>, Integer> tbcCellsLastTries;
 
-    public Sudoku(boolean randomBoard)
+    public Sudoku(int[][] board)
     {
-        genBoard(randomBoard);
+        this.board = board;
+        tbcCells = new ArrayList<>();
+        tbcCellsLastTries = new HashMap<>();
     }
 
     /**
-     * Generates a random Sudoku board from the basic static 9x9 matrix Sudoku board.
+     * Generates a random Sudoku board.
      */
-    // TODO Could be improves to generate legal Sudoku board without having to refer to a static board.
-    private void genBoard(boolean randomBoard)
+    public static int[][] randomiseBoard(int[][] board)
     {
-        board = new ArrayList<>();
-        for (int i = 0; i < 9; i++) {
-            List<Integer> tmp = new ArrayList<>();
-            for (int j = 0; j < 9; j++) {
-                if (randomBoard) {
-                    if (new Random().nextBoolean()) {
-                        tmp.add(BASE[i][j]);
-                    } else {
-                        tmp.add(0);
-                    }
-                } else {
-                    tmp.add(BASE[i][j]);
+        return randomiseBoard(board, 5);
+    }
+
+    /**
+     * Generates a random Sudoku board.
+     */
+    public static int[][] randomiseBoard(int[][] board, int perRow)
+    {
+        for (int x = 0; x < board.length; x++) {
+            int count = 0;
+            for (int y = 0; y < board[x].length; y++) {
+                if (new Random().nextBoolean() && count < perRow) {
+                    board[x][y] = 0;
+                    count++;
                 }
             }
-            board.add(tmp);
         }
-        setEmptyCoords();
+        return board;
     }
 
     /**
      * Prints the Sudoku board to standard output.
      */
-    public void printBoard()
+    public static void printBoard(String msg, int[][] board)
     {
-        for (List<Integer> integers : board) {
-            System.out.println(integers);
+        System.out.println(msg);
+        String xSep = "-------------------------";
+        String ySep = "| ";
+        System.out.println(xSep);
+        for (int x = 0; x < board.length; x++) {
+            StringBuilder xStr = new StringBuilder(ySep);
+            for (int y = 0; y < board[x].length; y++) {
+                xStr.append(board[x][y]).append(" ");
+                if ((y + 1) % 3 == 0) {
+                    xStr.append(ySep);
+                }
+            }
+            System.out.println(xStr);
+            if ((x + 1) % 3 == 0) {
+                System.out.println(xSep);
+            }
         }
+        System.out.println();
     }
 
-    /**
-     * Prints the basic static 9x9 matrix Sudoku board to standard output.
-     */
-    public void printBASE()
+    public int[][] getBoard()
     {
-        System.out.println(Arrays.deepToString(Sudoku.BASE).replace("[", "\n["));
+        return board;
     }
 
-    /**
-     * Starting solving the Sudoku game using backtracking algorithm:
-     * Source: https://dev.to/aspittel/how-i-finally-wrote-a-sudoku-solver-177g
-     */
-    public void solve()
+    private void popDataStructure()
     {
-        int index = 0;
-        while (index < emptyCoords.size()) {
-            var cd = emptyCoords.get(index);
-            for (int i = 1; i <= 9; i++) {
-                if (!prevUsed(cd, i) && validRow(cd, i) && validCol(cd, i) && validSubMatrix(cd, i)) {
-                    board.get(cd.getKey()).set(cd.getValue(), i);
-                    Set<Integer> tmp = new HashSet<>();
-                    for (int j = 1; j <= i; j++) {
-                        tmp.add(j);
-                    }
-                    tries.put(cd, tmp);
-                    index++;
-                    break;
-                } else if (i == 9) {
-                    tries.put(cd, new HashSet<>());
-                    index--;
-                    break;
+        for (int x = 0; x < board.length; x++) {
+            for (int y = 0; y < board[0].length; y++) {
+                if (board[x][y] == 0) {
+                    Pair<Integer, Integer> cell = new Pair<>(x, y);
+                    tbcCells.add(cell);
+                    tbcCellsLastTries.put(cell, 0);
                 }
             }
         }
-        System.out.println("\nSudoku board completed!\n");
     }
 
-    /**
-     * Generates a list of all coordinates in the Sudoku game which are empty.
-     * each coordinate has an associate HashSet containing values tried at that coordinate.
-     */
-    private void setEmptyCoords()
+    private boolean validRow(int n, int x, int y)
     {
-        emptyCoords = new ArrayList<>();
-        for (int i = 0; i < board.size(); i++) {
-            var row = board.get(i);
-            for (int j = 0; j < row.size(); j++) {
-                if (row.get(j) == 0) {
-                    emptyCoords.add(new Pair<>(i, j));
-                }
-            }
-        }
-        setTries();
-    }
-
-    /**
-     * Generate the HashMap for recording the numbers tried at each given coordinate.
-     */
-    private void setTries()
-    {
-        tries = new HashMap<>();
-        for (var coordinate : emptyCoords) {
-            tries.put(coordinate, new HashSet<>());
-        }
-    }
-
-    /**
-     * Check if a value has been used at that coordinate before.
-     */
-    private boolean prevUsed(Pair<Integer, Integer> coord, int value)
-    {
-        return tries.get(coord).contains(value);
-    }
-
-    /**
-     * Is a value legal at a given coordinate, for a given row.
-     */
-    private boolean validRow(Pair<Integer, Integer> coord, int value)
-    {
-        int rowInd = coord.getKey();
-        int colInd = coord.getValue();
-        List<Integer> row = board.get(rowInd);
-        for (int i = 0; i < row.size(); i++) {
-            if (i == colInd) {
+        for (int i = 0; i < board[x].length; i++) {
+            if (i == y) {
                 continue;
             }
-            if (row.get(i) == value) {
+            if (board[x][i] == n) {
                 return false;
             }
         }
         return true;
     }
 
-    /**
-     * Is a value legal at a given coordinate, for a given column.
-     */
-    private boolean validCol(Pair<Integer, Integer> coord, int value)
+    private boolean validCol(int n, int x, int y)
     {
-        int rowInd = coord.getKey();
-        int colInd = coord.getValue();
-        for (int i = 0; i < board.size(); i++) {
-            if (i == rowInd) {
+        for (int i = 0; i < board.length; i++) {
+            if (i == x) {
                 continue;
             }
-            int cellVal = board.get(i).get(colInd);
-            if (cellVal == value) {
+            if (board[i][y] == n) {
                 return false;
             }
         }
         return true;
     }
 
-    /**
-     * Is a value legal at in a given sub-matrix, the 3x3 matrix in which it resides.
-     */
-    private boolean validSubMatrix(Pair<Integer, Integer> coord, int value)
+    private Set<Integer> getSubSquareHelper(int x, int y, int xBound, int yBound)
     {
-        Set<Integer> subMatrixVals = getSubMatrixSet(coord);
-        return !subMatrixVals.contains(value);
+        Set<Integer> subSquareRes = new HashSet<>();
+        for (int i = xBound - 3; i < xBound; i++) {
+            for (int j = yBound - 3; j < yBound; j++) {
+                if (i == x && j == y) {
+                    continue;
+                }
+                subSquareRes.add(board[i][j]);
+            }
+        }
+        return subSquareRes;
     }
 
-    /**
-     * Get a HashSet of integers in the 3x3 sub matrix of the Sudoku board in which a coordinate resides.
-     */
-    private Set<Integer> getSubMatrixSet(Pair<Integer, Integer> coord)
+    private Set<Integer> getSubSquare(int x, int y)
     {
-        int rowInd = coord.getKey();
-        int colInd = coord.getValue();
-        if (rowInd < 3 && colInd < 3) {
-            return getSubMatrixSetHelper(coord, 3, 3);
-        } else if (rowInd < 3 && colInd < 6) {
-            return getSubMatrixSetHelper(coord, 3, 6);
-        } else if (rowInd < 3 && colInd < 9) {
-            return getSubMatrixSetHelper(coord, 3, 9);
-        } else if (rowInd < 6 && colInd < 3) {
-            return getSubMatrixSetHelper(coord, 6, 3);
-        } else if (rowInd < 6 && colInd < 6) {
-            return getSubMatrixSetHelper(coord, 6, 6);
-        } else if (rowInd < 6 && colInd < 9) {
-            return getSubMatrixSetHelper(coord, 6, 9);
-        } else if (rowInd < 9 && colInd < 3) {
-            return getSubMatrixSetHelper(coord, 9, 3);
-        } else if (rowInd < 9 && colInd < 6) {
-            return getSubMatrixSetHelper(coord, 9, 6);
-        } else if (rowInd < 9 && colInd < 9) {
-            return getSubMatrixSetHelper(coord, 9, 9);
+        if (x < 3 && y < 3) {
+            return getSubSquareHelper(x, y, 3, 3);
+        } else if (x < 3 && y < 6) {
+            return getSubSquareHelper(x, y, 3, 6);
+        } else if (x < 3 && y < 9) {
+            return getSubSquareHelper(x, y, 3, 9);
+        } else if (x < 6 && y < 3) {
+            return getSubSquareHelper(x, y, 6, 3);
+        } else if (x < 6 && y < 6) {
+            return getSubSquareHelper(x, y, 6, 6);
+        } else if (x < 6 && y < 9) {
+            return getSubSquareHelper(x, y, 6, 9);
+        } else if (x < 9 && y < 3) {
+            return getSubSquareHelper(x, y, 9, 3);
+        } else if (x < 9 && y < 6) {
+            return getSubSquareHelper(x, y, 9, 6);
+        } else if (x < 9 && y < 9) {
+            return getSubSquareHelper(x, y, 9, 9);
         }
         return new HashSet<>();
     }
 
-    /**
-     * Helper method for getSubMatrixSet().
-     */
-    private Set<Integer> getSubMatrixSetHelper(Pair<Integer, Integer> coord, int r, int c)
+    private boolean validSubSquare(int n, int x, int y)
     {
-        Set<Integer> tmp = new HashSet<>();
-        for (int i = (r - 1); i >= (r - 3); i--) {
-            for (int j = (c - 1); j >= (c - 3); j--) {
-                if (coord.getKey() == i && coord.getValue() == j) {
-                    continue;
-                }
-                tmp.add(board.get(i).get(j));
-            }
-        }
-        return tmp;
+        return !getSubSquare(x, y).contains(n);
     }
 
+    public void solve()
+    {
+        popDataStructure();
+        int index = 0;
+        while (index < tbcCells.size()) {
+            Pair<Integer, Integer> cell = tbcCells.get(index);
+            int x = cell.getKey();
+            int y = cell.getValue();
+            boolean forceBr = false;
+            for (int n = tbcCellsLastTries.get(cell) + 1; n <= board.length; n++) {
+                if (validRow(n, x, y) && validCol(n, x, y) && validSubSquare(n, x, y)) {
+                    tbcCellsLastTries.put(cell, n);
+                    board[x][y] = n;
+                    forceBr = true;
+                    break;
+                }
+            }
+            if (forceBr) {
+                // Found a valid number option for this cell - no row, column or sub square collisions
+                index++;
+            } else {
+                // Cannot find a valid number option for this cell, so backtrack to the last to be completed cell
+                tbcCellsLastTries.put(cell, 0);
+                board[x][y] = 0;
+                index--;
+            }
+        }
+    }
 }
