@@ -9,48 +9,60 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import java.util.List;
-
 /**
  * JavaFX App
+ *
+ * @author David W. Arnold
+ * @version 02/02/2021
  */
 public class App extends Application
 {
-    private final double SCENE_WIDTH = 360;
-    private final double SCENE_HEIGHT = 360;
-    private final int N = 9;
-    private final int M = 9;
-    double gridWidth = SCENE_WIDTH / N;
-    double gridHeight = SCENE_HEIGHT / M;
-    MyNode[][] playfield = new MyNode[N][M];
-    private static List<List<Integer>> start;
-    private static List<List<Integer>> complete;
+    private static int[][] solvedBoard;
 
     public static void main(String[] args)
     {
-        Sudoku game = new Sudoku(true);
-        game.printBoard(); // Before solve
-        game.solve();
-        game.printBoard(); // After solve
-        complete = game.board;
+        int[][] board = {
+                {1, 2, 3, 4, 5, 6, 7, 8, 9},
+                {4, 5, 6, 7, 8, 9, 1, 2, 3},
+                {7, 8, 9, 1, 2, 3, 4, 5, 6},
+                {2, 3, 4, 5, 6, 7, 8, 9, 1},
+                {5, 6, 7, 8, 9, 1, 2, 3, 4},
+                {8, 9, 1, 2, 3, 4, 5, 6, 7},
+                {3, 4, 5, 6, 7, 8, 9, 1, 2},
+                {6, 7, 8, 9, 1, 2, 3, 4, 5},
+                {9, 1, 2, 3, 4, 5, 6, 7, 8}
+        };
+        int[][] r = Sudoku.randomiseBoard(board);
+        Sudoku.printBoard("Randomised Sudoku Board:", r);
+        Sudoku s = new Sudoku(r);
+        s.solve();
+        solvedBoard = s.getBoard();
+        Sudoku.printBoard("Completed Sudoku Board:", solvedBoard);
         launch();
     }
 
     @Override
     public void start(Stage primaryStage)
     {
+        int X = 9;
+        int Y = 9;
+        MyNode[][] myBoard = new MyNode[X][Y];
         Group root = new Group();
 
-        // Initialize playfield
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < M; j++) {
+        // Initialize myBoard
+        double SCENE_WIDTH = 360;
+        double SCENE_HEIGHT = 360;
+        for (int i = 0; i < X; i++) {
+            for (int j = 0; j < Y; j++) {
                 // Create node
-                String val = Integer.toString(complete.get(j).get(i));
+                String val = Integer.toString(solvedBoard[j][i]);
+                double gridWidth = SCENE_WIDTH / X;
+                double gridHeight = SCENE_HEIGHT / Y;
                 MyNode node = new MyNode(val, i * gridWidth, j * gridHeight, gridWidth, gridHeight);
                 // Add node to group
                 root.getChildren().add(node);
-                // Add to playfield for further reference using an array
-                playfield[i][j] = node;
+                // Add to myBoard for further reference using an array
+                myBoard[i][j] = node;
             }
         }
 
