@@ -1,4 +1,4 @@
-# Java_Sudoku-Solver
+# Java Sudoku Solver
 
 Java solution to solving a 9x9 Sudoku puzzle
 
